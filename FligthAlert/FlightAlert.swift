@@ -32,30 +32,37 @@ struct AlertView: View {
             VStack {
                 Spacer()
                 
-                Button(action: {
-                    // Add your action here
-                    print("Add new alert tapped")
-                }) {
-                    HStack {
-                        HStack{
+                HStack(spacing: 0) {
+                    // Add new alert button
+                    Button(action: {
+                        print("Add new alert tapped")
+                    }) {
+                        HStack {
                             Image("FAPlus")
                             Text("Add new alert")
                         }
                         .padding()
-                         Rectangle()
-                                         .fill(Color.white.opacity(0.4))
-                                         .frame(width: 1, height: 50)
-                        HStack{
+                    }
+                    
+                    // Vertical divider
+                    Rectangle()
+                        .fill(Color.white.opacity(0.4))
+                        .frame(width: 1, height: 50)
+                    
+                    // Hamburger button
+                    Button(action: {
+                        print("hamburger tapped")
+                    }) {
+                        HStack {
                             Image("FAHamburger")
                         }
                         .padding()
-                        
                     }
-                    .foregroundColor(.white)
-                    .font(.system(size: 18))
-                    .background(Color("FABlue"))
-                    .cornerRadius(10)
                 }
+                .foregroundColor(.white)
+                .font(.system(size: 18))
+                .background(Color("FABlue"))
+                .cornerRadius(10)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -5)
