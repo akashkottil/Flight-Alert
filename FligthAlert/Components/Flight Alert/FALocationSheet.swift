@@ -2,7 +2,8 @@ import SwiftUI
 
 struct FALocationSheet: View {
     @Environment(\.dismiss) var dismiss
-    @State private var searchText = ""
+    @State private var originText = ""
+    @State private var destinationText = ""
     
     var body: some View {
         VStack(spacing: 0) {
@@ -26,14 +27,14 @@ struct FALocationSheet: View {
             }
             .padding()
             
-            // Search field design
+            // Origin search field
             HStack {
-                TextField("Origin City, Airport or place", text: $searchText)
+                TextField("Origin City, Airport or place", text: $originText)
                     .padding()
                 
-                if !searchText.isEmpty {
+                if !originText.isEmpty {
                     Button(action: {
-                        searchText = ""
+                        originText = ""
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.gray)
@@ -43,19 +44,19 @@ struct FALocationSheet: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.orange, lineWidth: 1)
+                    .stroke(originText.isEmpty ? Color.gray.opacity(0.8) : Color.orange, lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top)
             
-            // Search field design
+            // Destination search field
             HStack {
-                TextField("Destination City, Airport or place", text: $searchText)
+                TextField("Destination City, Airport or place", text: $destinationText)
                     .padding()
                 
-                if !searchText.isEmpty {
+                if !destinationText.isEmpty {
                     Button(action: {
-                        searchText = ""
+                        destinationText = ""
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.gray)
@@ -65,7 +66,7 @@ struct FALocationSheet: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.gray.opacity(0.8), lineWidth: 1)
+                    .stroke(destinationText.isEmpty ? Color.gray.opacity(0.8) : Color.orange, lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top)
