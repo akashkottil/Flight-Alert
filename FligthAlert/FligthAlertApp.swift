@@ -11,7 +11,7 @@ import SwiftUI
 struct FligthAlertApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AlertView()
         }
     }
 }
