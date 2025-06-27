@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct AlertView: View {
+    @State private var showLocationSheet = false
+    @State private var showMyAlertsSheet = false
+    
     var body: some View {
         ZStack {
             GradientColor.BlueWhite
@@ -35,7 +38,7 @@ struct AlertView: View {
                 HStack(spacing: 0) {
                     // Add new alert button
                     Button(action: {
-                        print("Add new alert tapped")
+                        showLocationSheet = true
                     }) {
                         HStack {
                             Image("FAPlus")
@@ -51,7 +54,7 @@ struct AlertView: View {
                     
                     // Hamburger button
                     Button(action: {
-                        print("hamburger tapped")
+                        showMyAlertsSheet = true
                     }) {
                         HStack {
                             Image("FAHamburger")
@@ -67,6 +70,12 @@ struct AlertView: View {
                 .padding(.bottom, 20)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -5)
             }
+        }
+        .sheet(isPresented: $showLocationSheet) {
+            FALocationSheet()
+        }
+        .sheet(isPresented: $showMyAlertsSheet) {
+            MyAlertsView()
         }
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MyAlertsView: View {
     @Environment(\.dismiss) var dismiss
+    @State private var showLocationSheet = false
     
     var body: some View {
         ZStack {
@@ -60,7 +61,7 @@ struct MyAlertsView: View {
                 Spacer()
                 
                 Button(action: {
-                    print("Add new alert tapped")
+                    showLocationSheet = true
                 }) {
                     HStack {
                         Image(systemName: "plus")
@@ -76,6 +77,9 @@ struct MyAlertsView: View {
                 .padding(.bottom, 20)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -5)
             }
+        }
+        .sheet(isPresented: $showLocationSheet) {
+            FALocationSheet()
         }
     }
     
@@ -138,11 +142,11 @@ struct MyAlertsView: View {
             HStack(spacing: 15) {
                 // Airport code badge
                 VStack(alignment: .leading){
-                    Text(fromCode)
+                    Text(toCode)
                         .font(.system(size: 14, weight: .bold))
                         .padding(.vertical,5)
                         .cornerRadius(8)
-                        Text(fromName)
+                        Text(toName)
                         .font(.system(size: 14))
                             .foregroundColor(.black)
                 }

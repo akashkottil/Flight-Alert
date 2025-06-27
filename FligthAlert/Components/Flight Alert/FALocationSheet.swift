@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct FALocationSheet: View {
+    @Environment(\.dismiss) var dismiss
     @State private var searchText = ""
     
     var body: some View {
@@ -8,7 +9,7 @@ struct FALocationSheet: View {
             // Top bar design
             HStack {
                 Button(action: {
-                    // Close action
+                    dismiss()
                 }) {
                     Image(systemName: "xmark")
                         .foregroundColor(.black)
@@ -112,7 +113,10 @@ struct FALocationSheet: View {
     @ViewBuilder
     private func locationResultRow(iataCode: String, cityName: String, countryName: String, airportName: String) -> some View {
         Button(action: {
-            // Select location action
+            // Select location action - you can add logic here to handle selection
+            print("Selected: \(iataCode) - \(cityName)")
+            // Optionally dismiss after selection
+            // dismiss()
         }) {
             VStack(spacing: 0) {
                 HStack(spacing: 15) {
