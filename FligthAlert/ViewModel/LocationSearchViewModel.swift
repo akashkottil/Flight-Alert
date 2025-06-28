@@ -1,11 +1,3 @@
-//
-//  LocationSearchViewModel.swift
-//  FligthAlert
-//
-//  Created by Akash Kottil on 28/06/25.
-//
-
-
 import Foundation
 import Combine
 import SwiftUI
@@ -21,11 +13,11 @@ class LocationSearchViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var selectedOrigin: Airport?
     @Published var selectedDestination: Airport?
+    @Published var debugInfo = ""
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private let networkManager = NetworkManager.shared
-    private let searchLimit = 10
     private var searchTask: AnyCancellable?
     
     // MARK: - Search States
@@ -114,7 +106,7 @@ class LocationSearchViewModel: ObservableObject {
         return selectedOrigin != nil && selectedDestination != nil
     }
     
-    // MARK: - Private Methods
+    // MARK: - Search Method
     private func searchAirports(query: String) {
         guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             searchResults = []
@@ -126,51 +118,85 @@ class LocationSearchViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
+        debugInfo = ""
         
-        let searchParams = AirportSearchParameters(
-            query: query.trimmingCharacters(in: .whitespacesAndNewlines),
-            limit: searchLimit,
-            page: 1
-        )
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        searchTask = networkManager.request(
-            endpoint: "v1/airports/",
-            parameters: searchParams.toDictionary(),
-            responseType: AirportSearchResponse.self
-        )
-        .receive(on: DispatchQueue.main)
-        .sink(
-            receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
-                
-                switch completion {
-                case .failure(let error):
-                    self?.handleSearchError(error)
-                case .finished:
-                    break
+        searchTask = networkManager.requestAirports(query: trimmedQuery)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    
+                    switch completion {
+                    case .failure(let error):
+                        self?.handleSearchError(error)
+                    case .finished:
+                        print("✅ Search completed successfully")
+                    }
+                },
+                receiveValue: { [weak self] airports in
+                    print("📊 Received \(airports.count) airports")
+                    self?.searchResults = airports
+                    self?.debugInfo = "Found \(airports.count) results"
                 }
-            },
-            receiveValue: { [weak self] response in
-                self?.searchResults = response.airports
-            }
-        )
+            )
     }
     
+    // MARK: - Error Handling
     private func handleSearchError(_ error: NetworkError) {
-        print("Search error: \(error.localizedDescription)")
+        print("❌ Search error: \(error.localizedDescription)")
         
         switch error {
-        case .networkError:
-            errorMessage = "Network connection error. Please check your internet connection."
+        case .networkError(let underlyingError):
+            if let urlError = underlyingError as? URLError {
+                switch urlError.code {
+                case .notConnectedToInternet:
+                    errorMessage = "No internet connection. Please check your network."
+                case .timedOut:
+                    errorMessage = "Request timed out. Please try again."
+                case .cannotFindHost, .cannotConnectToHost:
+                    errorMessage = "Cannot connect to server. Please try again later."
+                default:
+                    errorMessage = "Network error: \(urlError.localizedDescription)"
+                }
+            } else {
+                errorMessage = "Network connection error. Please check your internet connection."
+            }
         case .decodingError:
-            errorMessage = "Unable to process search results."
+            errorMessage = "Server response format error. This is likely a temporary issue."
+            debugInfo = "Decoding failed - check console for raw response"
         case .invalidURL:
             errorMessage = "Invalid search request."
         default:
             errorMessage = "Search failed. Please try again."
         }
         
-        // Show default results or clear results
         searchResults = []
+    }
+    
+    // MARK: - Sample Data for Testing
+    func loadSampleData() {
+        let sampleAirports = [
+            Airport(iataCode: "JFK", icaoCode: "KJFK", name: "John F. Kennedy International Airport", cityName: "New York", countryName: "United States", countryCode: "US", latitude: 40.6413, longitude: -73.7781),
+            Airport(iataCode: "LAX", icaoCode: "KLAX", name: "Los Angeles International Airport", cityName: "Los Angeles", countryName: "United States", countryCode: "US", latitude: 33.9425, longitude: -118.4081),
+            Airport(iataCode: "LHR", icaoCode: "EGLL", name: "Heathrow Airport", cityName: "London", countryName: "United Kingdom", countryCode: "GB", latitude: 51.4700, longitude: -0.4543),
+            Airport(iataCode: "CDG", icaoCode: "LFPG", name: "Charles de Gaulle Airport", cityName: "Paris", countryName: "France", countryCode: "FR", latitude: 49.0097, longitude: 2.5479),
+            Airport(iataCode: "COK", icaoCode: "VOCI", name: "Cochin International Airport", cityName: "Kochi", countryName: "India", countryCode: "IN", latitude: 10.1520, longitude: 76.4019)
+        ]
+        
+        let query = activeField == .origin ? originText : destinationText
+        let filteredAirports = sampleAirports.filter { airport in
+            query.isEmpty ||
+            airport.cityName.lowercased().contains(query.lowercased()) ||
+            airport.iataCode.lowercased().contains(query.lowercased()) ||
+            airport.name.lowercased().contains(query.lowercased())
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.searchResults = filteredAirports
+            self.isLoading = false
+            self.debugInfo = "Using sample data (\(filteredAirports.count) results)"
+        }
     }
 }
