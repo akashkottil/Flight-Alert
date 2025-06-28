@@ -18,7 +18,7 @@ struct FALocationSheet: View {
                         .background(Circle().fill(Color.gray.opacity(0.1)))
                 }
                 Spacer()
-                Text("From Where?")
+                Text("From Where??")
                     .bold()
                     .font(.title2)
                 Spacer()
